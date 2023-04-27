@@ -16,12 +16,15 @@ class MailgunHandler extends MailHandler
     protected $message;
     protected $apiKey;
 
-    public function __construct($to, $subject, $from, $token, $domain, $level = Logger::CRITICAL, $bubble = true, $host = 'api.mailgun.net', $version = 'v3')
+    public function __construct($to, $subject, $from, $token, $domain, $type = 'text', $level = Logger::CRITICAL, $bubble = true, $host = 'api.mailgun.net', $version = 'v3')
     {
         if ($version !== 'v3') {
             throw new Exception("Version '{$version}' is not supported");
         }
-
+        
+        if (!in_array($type, [ 'text', 'html' ])) {
+            throw new Exception("Type '{$type}' is not supported");
+        }
         $this->to = $to;
         $this->subject = $subject;
         $this->from = $from;
@@ -29,6 +32,7 @@ class MailgunHandler extends MailHandler
         $this->version = $version;
         $this->domain = $domain;
         $this->token = $token;
+        $this->type = $type;
 
         parent::__construct($level, $bubble);
     }
@@ -44,7 +48,7 @@ class MailgunHandler extends MailHandler
             'from'    => $this->from,
             'to'      => $this->to,
             'subject' => $this->subject,
-            'text'    => $content
+            $this->type => $content
         ]);
 
         $ch = curl_init();
