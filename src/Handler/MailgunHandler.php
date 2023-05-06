@@ -16,7 +16,7 @@ class MailgunHandler extends MailHandler
     protected $message;
     protected $apiKey;
 
-    public function __construct($to, $subject, $from, $token, $domain, $type = 'text', $level = Logger::CRITICAL, $bubble = true, $host = 'api.mailgun.net', $version = 'v3')
+    public function __construct($to, $subject, $from, $token, $domain, $extra = [], $type = 'text', $level = Logger::CRITICAL, $bubble = true, $host = 'api.mailgun.net', $version = 'v3')
     {
         if ($version !== 'v3') {
             throw new Exception("Version '{$version}' is not supported");
@@ -33,6 +33,7 @@ class MailgunHandler extends MailHandler
         $this->domain = $domain;
         $this->token = $token;
         $this->type = $type;
+        $this->extra = $extra;
 
         parent::__construct($level, $bubble);
     }
@@ -44,12 +45,12 @@ class MailgunHandler extends MailHandler
     {
         $auth = base64_encode("api:".$this->token);
 
-        $fields = http_build_query([
+        $fields = http_build_query(array_merge($this->extra, [
             'from'    => $this->from,
             'to'      => $this->to,
             'subject' => $this->subject,
             $this->type => $content
-        ]);
+        ]));
 
         $ch = curl_init();
 
